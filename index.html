@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PixelVoid — Cohort Revenue Dashboard · Sep 14–22 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#080f1c; --bg2:#0b1526; --panel:#0f1d33; --panel2:#122340;
+  --line:#1c2c48; --line2:#26395c;
+  --ink:#e8eefb; --sub:#9fb1cf; --muted:#5c7196;
+  --teal:#2dd4bf; --teal-dim:#1c8578;
+  --amber:#f5b544; --rose:#f2688a; --green:#48d68a; --violet:#8b8bf0;
+  --factual:#e8eefb;
+  --radius:14px;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --sans:'Space Grotesk',system-ui,sans-serif;
+}
+*{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:
+    radial-gradient(1100px 520px at 82% -8%, #16305a55, transparent 60%),
+    radial-gradient(900px 460px at -6% 4%, #12414033, transparent 55%),
+    var(--bg);
+  color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;letter-spacing:.005em;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:26px 20px 80px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px 24px;
+  padding-bottom:20px;border-bottom:1px solid var(--line)}
+.brand{display:flex;flex-direction:column;gap:4px}
+.brand .ey{font-family:var(--mono);font-size:11.5px;color:var(--teal);
+  letter-spacing:.14em;text-transform:uppercase}
+.brand h1{margin:0;font-size:25px;font-weight:600;letter-spacing:-.01em}
+.brand h1 span{color:var(--muted);font-weight:400}
+.hmeta{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px}
+.chip{border:1px solid var(--line2);background:#0c1a30;color:var(--sub);
+  padding:5px 9px;border-radius:8px;white-space:nowrap}
+.chip b{color:var(--ink);font-weight:600}
+.chip.warn{border-color:#5a4413;background:#231a07;color:var(--amber)}
+
+nav.tabs{position:sticky;top:0;z-index:20;display:flex;gap:2px;flex-wrap:wrap;
+  margin:22px 0 20px;padding:6px;border:1px solid var(--line);border-radius:12px;
+  background:#0a1626ee;backdrop-filter:blur(8px)}
+nav.tabs button{font-family:var(--sans);font-size:13.5px;font-weight:500;
+  color:var(--sub);background:transparent;border:0;padding:8px 13px;border-radius:8px;cursor:pointer;transition:background .12s,color .12s}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button.on{background:var(--panel2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line2)}
+nav.tabs button:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+
+.panel{display:none;animation:fade .18s ease}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.panel{animation:none}}
+
+h3.sec{font-size:13px;font-weight:600;color:var(--teal);letter-spacing:.02em;
+  margin:26px 0 12px;display:flex;align-items:center;gap:9px}
+h3.sec:first-child{margin-top:4px}
+h3.sec .n{font-family:var(--mono);color:var(--muted);font-size:12px}
+.note{color:var(--muted);font-size:12.5px;margin:6px 0 14px;max-width:78ch}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:12px}
+.kpi{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),#0c1a30);
+  border-radius:var(--radius);padding:15px 16px;position:relative;overflow:hidden}
+.kpi::after{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--teal-dim);opacity:.7}
+.kpi.amber::after{background:var(--amber)}
+.kpi.rose::after{background:var(--rose)}
+.kpi .k{font-family:var(--mono);font-size:10.5px;color:var(--muted);
+  letter-spacing:.08em;text-transform:uppercase}
+.kpi .v{font-family:var(--mono);font-size:26px;font-weight:600;margin-top:6px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--sub);margin-top:3px}
+.kpi .v.small{font-size:20px}
+
+.twrap{border:1px solid var(--line);border-radius:var(--radius);overflow:auto;
+  background:var(--panel);-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:640px;font-variant-numeric:tabular-nums}
+thead th{position:sticky;top:0;background:#0d1c34;color:var(--sub);font-weight:500;
+  font-size:11.5px;letter-spacing:.03em;text-align:right;padding:11px 13px;
+  border-bottom:1px solid var(--line2);white-space:nowrap;z-index:2}
+thead th:first-child{text-align:left}
+tbody td{padding:10px 13px;text-align:right;font-family:var(--mono);font-size:13px;
+  border-bottom:1px solid var(--line);white-space:nowrap}
+tbody td:first-child{text-align:left;font-family:var(--sans);color:var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#0e1e39}
+tfoot td{padding:11px 13px;text-align:right;font-family:var(--mono);font-size:13px;
+  font-weight:600;border-top:1px solid var(--line2);background:#0c1a30}
+tfoot td:first-child{text-align:left;font-family:var(--sans)}
+.fact{font-weight:600;color:var(--factual)}
+.proj{font-style:italic;color:var(--amber)}
+.na{color:var(--muted)}
+.sub{color:var(--sub);font-size:11px}
+.pill{display:inline-block;font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:20px;border:1px solid var(--line2)}
+.pill.inc{color:var(--amber);border-color:#5a4413;background:#20190a}
+.pill.ok{color:var(--green);border-color:#1c4d36;background:#0c2519}
+.g{color:var(--green)} .a{color:var(--amber)} .r{color:var(--rose)}
+
+.chart{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:16px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--sub);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+.mrow{border:1px solid var(--line);border-radius:12px;background:var(--panel);
+  padding:13px 15px;margin-bottom:9px}
+.mrow h4{margin:0 0 4px;font-size:13.5px;font-weight:600}
+.mrow p{margin:0;color:var(--sub);font-size:13px}
+.mrow code{font-family:var(--mono);font-size:12px;color:var(--teal);background:#0b1a2e;padding:1px 6px;border-radius:5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}.hmeta{margin-left:0}}
+footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);
+  color:var(--muted);font-family:var(--mono);font-size:11px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <div class="ey">PixelVoid · Minecraft W2A</div>
+      <h1>Cohort Revenue Dashboard <span>/ EN</span></h1>
+    </div>
+    <div class="hmeta">
+      <span class="chip">Period <b>14–22 Sep 2026</b></span>
+      <span class="chip">Product <b>Skin Addon</b></span>
+      <span class="chip warn">FX <b>1€=1.08$</b> assumed</span>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <section class="panel on" id="p-overview">
+    <h3 class="sec"><span class="n">01</span> Итоги периода</h3>
+    <div class="kpis" id="kpis"></div>
+    <p class="note" id="ov-note"></p>
+
+    <h3 class="sec"><span class="n">02</span> Экономика привлечения (EN)</h3>
+    <div class="kpis" id="kpis2"></div>
+    <p class="note">CPA = Spend Меты (EN) / новые клиенты Stripe (130). Собственный CPA Меты считается от её же счётчика покупок, поэтому может отличаться.</p>
+  </section>
+
+  <section class="panel" id="p-weekly">
+    <h3 class="sec"><span class="n">01</span> Недельные когорты <span class="sub">(Пн–Вс, ISO)</span></h3>
+    <p class="note">Дата привлечения = customer Created (UTC). Незавершённая неделя (воскресенье ещё не прошло) помечена <span class="pill inc">incomplete</span>.</p>
+    <div class="twrap"><table id="tbl-weekly"></table></div>
+
+    <h3 class="sec"><span class="n">02</span> CPA-тренд <span class="sub">(€)</span></h3>
+    <div class="chart">
+      <div id="cpa-chart"></div>
+      <div class="legend">
+        <span><i style="background:var(--green)"></i>&lt; €51</span>
+        <span><i style="background:var(--amber)"></i>€51–100</span>
+        <span><i style="background:var(--rose)"></i>&gt; €100</span>
+        <span class="na">пунктир — нет спенда / незрелая неделя</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-daily">
+    <h3 class="sec"><span class="n">01</span> Дневные когорты</h3>
+    <p class="note">Дни без новых клиентов опущены.</p>
+    <div class="twrap"><table id="tbl-daily"></table></div>
+  </section>
+
+  <section class="panel" id="p-retention">
+    <h3 class="sec"><span class="n">01</span> Trial → Monthly · ретеншен</h3>
+    <p class="note">
+      <b class="fact">M0</b> — фактическая трайл-когорта. <span class="proj">M1–M12 — заданная прогнозная кривка</span> (% от исходной трайл-когорты). Это оценка удержания платящих, не данные когорты.
+    </p>
+    <div class="twrap"><table id="tbl-ret"></table></div>
+    <p class="note" id="ret-note"></p>
+  </section>
+
+  <section class="panel" id="p-audit">
+    <h3 class="sec"><span class="n">01</span> Аудит и реконсиляция</h3>
+    <div class="twrap"><table id="tbl-audit"></table></div>
+    <h3 class="sec"><span class="n">02</span> Data-quality</h3>
+    <div class="twrap"><table id="tbl-dq"></table></div>
+  </section>
+
+  <section class="panel" id="p-method">
+    <h3 class="sec"><span class="n">01</span> Методология и допущения</h3>
+    <div class="grid2" id="method"></div>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+window.DASH = {"summary": {"period": "2026-09-14 .. 2026-09-22", "fx": "1 EUR = 1.08 USD (ASSUMED)", "product": "PIXELVOID SKIN ADDON", "new_customers": 124, "matched_customers": 194, "total_customers_in_file": 398, "unmatched": 204, "latam_excluded": 49, "trial": 124, "monthly_direct": 0, "other": 0, "converted": 21, "conv_rate_observed": 0.258, "matured_trials": 66, "spend_eur": 11285.19, "d0_rev_eur": 113.67, "realized_rev_eur": 756.03, "blended_cpa": 91.01, "d0_roas": 0.01, "roas": 0.067, "observed_ltv": 6.1, "haircut": 0.9903}, "weekly": [{"week": "2026-09-14", "w_end": "2026-09-20", "new": 96, "trial": 96, "monthly": 0, "other": 0, "converted": 21, "d0_eur": 88.0, "real_eur": 730.36, "spend": 8598.19, "cpa": 89.56, "d0_roas": 0.01, "roas": 0.085, "complete": true}, {"week": "2026-09-21", "w_end": "2026-09-27", "new": 28, "trial": 28, "monthly": 0, "other": 0, "converted": 0, "d0_eur": 25.67, "real_eur": 25.67, "spend": 2687.0, "cpa": 95.96, "d0_roas": 0.01, "roas": 0.01, "complete": false}], "daily": [{"date": "2026-09-14", "new": 9, "d0_eur": 8.25, "real_eur": 91.56, "spend": 343.05, "cpa": 38.12}, {"date": "2026-09-15", "new": 18, "d0_eur": 16.5, "real_eur": 91.47, "spend": 1161.2, "cpa": 64.51}, {"date": "2026-09-16", "new": 8, "d0_eur": 7.33, "real_eur": 82.31, "spend": 1110.07, "cpa": 138.76}, {"date": "2026-09-17", "new": 10, "d0_eur": 9.17, "real_eur": 84.14, "spend": 1385.3, "cpa": 138.53}, {"date": "2026-09-18", "new": 21, "d0_eur": 19.25, "real_eur": 242.31, "spend": 1908.63, "cpa": 90.89}, {"date": "2026-09-19", "new": 16, "d0_eur": 14.67, "real_eur": 125.74, "spend": 1168.01, "cpa": 73.0}, {"date": "2026-09-20", "new": 14, "d0_eur": 12.83, "real_eur": 12.83, "spend": 1521.93, "cpa": 108.71}, {"date": "2026-09-21", "new": 8, "d0_eur": 7.33, "real_eur": 7.33, "spend": 951.0, "cpa": 118.88}, {"date": "2026-09-22", "new": 20, "d0_eur": 18.33, "real_eur": 18.33, "spend": 1736.0, "cpa": 86.8}], "monthly": {"month": "2026-09", "new": 124, "trial": 124, "monthly": 0, "other": 0, "converted": 21, "d0_eur": 113.67, "real_eur": 756.03, "spend": 11285.19, "cpa": 91.01, "d0_roas": 0.01, "roas": 0.067, "complete": false}, "meta_daily": {"2026-09-08": 0.0, "2026-09-13": 0.0, "2026-09-14": 343.05, "2026-09-15": 1161.2, "2026-09-16": 1110.07, "2026-09-17": 1385.3, "2026-09-18": 1908.63, "2026-09-19": 1168.01, "2026-09-20": 1521.93, "2026-09-21": 951.0, "2026-09-22": 1736.0}, "unmapped_amounts": {"20.99": 3}, "warnings": []};
+
+var D = window.DASH, S = D.summary;
+var euro = function(n){ if(n==null) return '—'; return '€'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+var num = function(n){ return n==null?'—':Number(n).toLocaleString('en-US'); };
+var pct = function(n){ return n==null?'—':(n*100).toFixed(1)+'%'; };
+var roas = function(n){ return n==null?'<span class="na">n/a</span>':(Number(n)).toFixed(3)+'×'; };
+function cpaColor(v){ if(v==null||v===0) return 'na'; if(v<51) return 'g'; if(v<=100) return 'a'; return 'r'; }
+
+var TABS=[['overview','Обзор'],['weekly','Недели'],['daily','Дни'],['retention','Ретеншен'],['audit','Аудит'],['method','Методология']];
+var nav=document.getElementById('tabs');
+TABS.forEach(function(t,i){
+  var b=document.createElement('button'); b.textContent=t[1]; if(i===0)b.className='on';
+  b.onclick=function(){
+    document.querySelectorAll('nav.tabs button').forEach(function(x){x.classList.remove('on')});
+    document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on')});
+    b.classList.add('on'); document.getElementById('p-'+t[0]).classList.add('on');
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+  nav.appendChild(b);
+});
+
+function kpi(k,v,s,cls){ return '<div class="kpi '+(cls||'')+'"><div class="k">'+k+'</div><div class="v'+(String(v).length>9?' small':'')+'">'+v+'</div><div class="s">'+(s||'')+'</div></div>'; }
+document.getElementById('kpis').innerHTML=[
+  kpi('New customers', num(S.new_customers), 'EN · trial · in window'),
+  kpi('Realized revenue', euro(S.realized_rev_eur), 'net, всё привлечение периода'),
+  kpi('D0 revenue', euro(S.d0_rev_eur), 'выручка в день привлечения'),
+  kpi('Converted', num(S.converted), pct(S.conv_rate_observed)+' от '+S.matured_trials+' созревших','amber')
+].join('');
+var unm=Object.keys(D.unmapped_amounts).map(function(k){return '€'+k+' ×'+D.unmapped_amounts[k];}).join(', ');
+document.getElementById('ov-note').innerHTML='Все '+S.new_customers+' — триалы за €0.99 (0 прямых Monthly в периоде). Из «созревших» триалов ('+S.matured_trials+') сконвертились в €29.99 — '+S.converted+' ('+pct(S.conv_rate_observed)+').'+(unm?' Суммы-исключения: '+unm+' — помечены в Data-quality.':'');
+
+document.getElementById('kpis2').innerHTML=[
+  kpi('Meta spend', euro(S.spend_eur), 'EN'),
+  kpi('Blended CPA', euro(S.blended_cpa), 'spend / new (Stripe)', S.blended_cpa>100?'rose':(S.blended_cpa>51?'amber':''))
+].join('');
+
+function weekLabel(w){ return w.week+' → '+w.w_end; }
+(function(){
+  var head='<thead><tr><th>Неделя (Пн–Вс)</th><th>New</th><th>Trial</th><th>Conv.</th><th>Spend</th><th>CPA</th><th>D0 rev</th><th>Realized</th><th></th></tr></thead>';
+  var rows=D.weekly.map(function(w){
+    var inc=!w.complete;
+    var cpaCell = (w.spend>0)?'<span class="'+cpaColor(w.cpa)+'">'+euro(w.cpa)+'</span>':'<span class="na">—</span>';
+    return '<tr>'+
+      '<td>'+weekLabel(w)+(inc?' <span class="pill inc">incomplete</span>':'')+'</td>'+
+      '<td class="fact">'+num(w.new)+'</td>'+
+      '<td>'+num(w.trial)+'</td>'+
+      '<td>'+num(w.converted)+'</td>'+
+      '<td>'+(w.spend>0?euro(w.spend):'<span class="na">—</span>')+'</td>'+
+      '<td>'+cpaCell+'</td>'+
+      '<td>'+euro(w.d0_eur)+'</td>'+
+      '<td class="fact">'+euro(w.real_eur)+'</td>'+
+      '<td>'+(inc?'':'<span class="pill ok">closed</span>')+'</td></tr>';
+  }).join('');
+  var tot=D.weekly.reduce(function(a,w){a.new+=w.new;a.tr+=w.trial;a.cv+=w.converted;a.sp+=w.spend;a.d0+=w.d0_eur;a.re+=w.real_eur;return a;},{new:0,tr:0,cv:0,sp:0,d0:0,re:0});
+  var foot='<tfoot><tr><td>Σ</td><td>'+tot.new+'</td><td>'+tot.tr+'</td><td>'+tot.cv+'</td><td>'+euro(tot.sp)+'</td><td>'+euro(tot.sp/tot.new)+'</td><td>'+euro(tot.d0)+'</td><td>'+euro(tot.re)+'</td><td></td></tr></tfoot>';
+  document.getElementById('tbl-weekly').innerHTML=head+'<tbody>'+rows+'</tbody>'+foot;
+})();
+
+(function(){
+  var data=D.weekly.map(function(w){return {label:w.week.slice(5), cpa:w.spend>0?w.cpa:null, inc:!w.complete};});
+  var W=Math.max(360, data.length*150), H=190, padL=44,padB=34,padT=14, bw=64, gap=(W-padL-20)/data.length;
+  var maxV=Math.max(120, Math.max.apply(null,data.map(function(d){return d.cpa||0})) );
+  var y=function(v){return padT+(H-padT-padB)*(1-v/maxV);};
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" preserveAspectRatio="xMinYMid meet" font-family="var(--mono)">';
+  [51,100].forEach(function(g){ svg+='<line x1="'+padL+'" x2="'+(W-14)+'" y1="'+y(g)+'" y2="'+y(g)+'" stroke="#22344f" stroke-dasharray="3 4"/>'; svg+='<text x="'+(W-12)+'" y="'+(y(g)-3)+'" fill="#5c7196" font-size="9" text-anchor="end">€'+g+'</text>'; });
+  data.forEach(function(d,i){
+    var cx=padL+gap*i+gap/2, x=cx-bw/2;
+    if(d.cpa==null){
+      svg+='<rect x="'+x+'" y="'+y(maxV*0.06)+'" width="'+bw+'" height="'+(y(0)-y(maxV*0.06))+'" fill="none" stroke="#2a3d5c" stroke-dasharray="4 4" rx="4"/>';
+      svg+='<text x="'+cx+'" y="'+(y(0)+18)+'" fill="#5c7196" font-size="10" text-anchor="middle">'+d.label+'</text>';
+      svg+='<text x="'+cx+'" y="'+(y(maxV*0.06)-6)+'" fill="#5c7196" font-size="9" text-anchor="middle">no spend</text>';
+      return;
+    }
+    var col=d.cpa<51?'#48d68a':(d.cpa<=100?'#f5b544':'#f2688a');
+    var top=y(d.cpa);
+    svg+='<rect x="'+x+'" y="'+top+'" width="'+bw+'" height="'+(y(0)-top)+'" fill="'+col+'" opacity="'+(d.inc?0.45:0.9)+'" rx="4"/>';
+    svg+='<text x="'+cx+'" y="'+(top-6)+'" fill="'+col+'" font-size="11" font-weight="600" text-anchor="middle">€'+d.cpa.toFixed(0)+(d.inc?'*':'')+'</text>';
+    svg+='<text x="'+cx+'" y="'+(y(0)+18)+'" fill="#9fb1cf" font-size="10" text-anchor="middle">'+d.label+(d.inc?' *':'')+'</text>';
+  });
+  svg+='</svg>';
+  document.getElementById('cpa-chart').innerHTML=svg;
+})();
+
+(function(){
+  var head='<thead><tr><th>Дата</th><th>New</th><th>Spend</th><th>CPA</th><th>D0 rev</th><th>Realized</th></tr></thead>';
+  var rows=D.daily.map(function(d){
+    var cpaCell=(d.spend>0)?'<span class="'+cpaColor(d.cpa)+'">'+euro(d.cpa)+'</span>':'<span class="na">—</span>';
+    return '<tr><td>'+d.date+'</td><td class="fact">'+num(d.new)+'</td>'+
+      '<td>'+(d.spend>0?euro(d.spend):'<span class="na">—</span>')+'</td>'+
+      '<td>'+cpaCell+'</td><td>'+euro(d.d0_eur)+'</td><td>'+euro(d.real_eur)+'</td></tr>';
+  }).join('');
+  document.getElementById('tbl-daily').innerHTML=head+'<tbody>'+rows+'</tbody>';
+})();
+
+(function(){
+  var M0=S.trial, convObs=S.converted, convBase=S.matured_trials;
+  // Кривая ретеншена (% от исходной трайл-когорты), заданная вручную
+  var curve=[['M1 (Trial→M1)',0.40],['M2',0.25],['M3',0.15],['M4',0.10],['M5',0.08],['M6',0.03],['M7',0],['M8',0],['M9',0],['M10',0],['M11',0],['M12',0]];
+  var priceEur=29.99/1.08;
+  var rows=[];
+  rows.push('<tr><td>M0 · trial start</td><td class="fact">'+M0+'</td><td class="fact">100.0%</td><td class="na">—</td><td><span class="pill ok">factual</span></td></tr>');
+  curve.forEach(function(c){
+    var rate=c[1];
+    var cust=Math.round(M0*rate);
+    var rev=cust*priceEur;
+    rows.push('<tr><td>'+c[0]+'</td>'+
+      '<td class="proj">'+cust+'</td>'+
+      '<td class="proj">'+(rate*100).toFixed(1)+'%</td>'+
+      '<td class="proj">'+(rate>0?euro(rev):'<span class="na">—</span>')+'</td>'+
+      '<td><span class="pill inc">projected</span></td></tr>');
+  });
+  var head='<thead><tr><th>Milestone</th><th>Customers</th><th>Retention</th><th>Revenue (proj)</th><th></th></tr></thead>';
+  document.getElementById('tbl-ret').innerHTML=head+'<tbody>'+rows.join('')+'</tbody>';
+  document.getElementById('ret-note').innerHTML='M1–M12 — заданная прогнозная кривка (% от исходной трайл-когорты '+M0+'). Выручка milestone = клиенты × €27.77 (29.99$ ÷ 1.08). Для справки: наблюдаемая конверсия на созревших триалах ('+convBase+') = <b class="fact">'+convObs+'</b> (<b class="fact">'+pct(S.conv_rate_observed)+'</b>).';
+})();
+
+(function(){
+  var a=[
+    ['Meta spend (EN)', euro(S.spend_eur)],
+    ['Eligible new customers', num(S.new_customers)],
+    ['Matched to Minecraft pay (email)', num(S.matched_customers)],
+    ['Trial → Monthly plan', num(S.trial)],
+    ['Monthly (direct)', num(S.monthly_direct)],
+    ['Converted (factual)', num(S.converted)],
+    ['Realized net revenue', euro(S.realized_rev_eur)],
+    ['D0 net revenue', euro(S.d0_rev_eur)],
+    ['Blended CPA', euro(S.blended_cpa)]
+  ];
+  var rows=a.map(function(r){return '<tr><td>'+r[0]+'</td><td class="fact">'+r[1]+'</td></tr>';}).join('');
+  document.getElementById('tbl-audit').innerHTML='<thead><tr><th>Метрика</th><th>Значение</th></tr></thead><tbody>'+rows+'</tbody>';
+
+  var dq=[
+    ['⚠','subscriptions отсутствует','Ретеншен M1–M12 и форекасты — прогноз по бенчмарку, не по данным'],
+    ['⚠','Мета без clicks/impressions','CTR / CPC / CPM недоступны'],
+    ['⚠','Customer ID в payments пуст','Джойн по email (metadata)'],
+    ['⚠','FX USD→EUR допущен','Курс 1.08 — заменить на реальный сентябрьский'],
+    ['⚠','Unmapped amounts', Object.keys(D.unmapped_amounts).map(function(k){return '€'+k+' ×'+D.unmapped_amounts[k];}).join(', ')+' — не trial/monthly'],
+    ['⚠','Короткий горизонт','~2 недели: milestone-факты почти отсутствуют, LTV незрелый'],
+    ['✓','Product filter','Statement Descriptor = PIXELVOID SKIN ADDON (чужие продукты отсечены)']
+  ];
+  var drows=dq.map(function(r){var cls=r[0]==='✓'?'g':'a';return '<tr><td><span class="'+cls+'">'+r[0]+'</span> '+r[1]+'</td><td style="text-align:left;font-family:var(--sans);color:var(--sub);white-space:normal">'+r[2]+'</td></tr>';}).join('');
+  document.getElementById('tbl-dq').innerHTML='<thead><tr><th>Статус · чек</th><th style="text-align:left">Детали</th></tr></thead><tbody>'+drows+'</tbody>';
+})();
+
+(function(){
+  var m=[
+    ['Период','14–22 сент 2026. Дата привлечения — customer <code>Created (UTC)</code>.'],
+    ['Когорты','Месяц — календарный; неделя — Пн–Вс (ISO). Незавершённая неделя помечается incomplete.'],
+    ['Eligible customer','Minecraft-платёж (Paid), <code>Payment Count &gt; 0</code>, привлечён в окне.'],
+    ['Джойн','payments.<code>email (metadata)</code> ↔ customers.<code>Email</code> (Customer ID пуст).'],
+    ['План','По сумме: <code>0.99 → Trial</code>, <code>29.99 → Monthly</code>. Прочие суммы — unmapped (Data-quality).'],
+    ['Net revenue','<code>Amount − Amount Refunded − Disputed Amount</code>, затем → EUR.'],
+    ['FX','1 EUR = 1.08 USD (допущение). EUR-платежи не конвертируются.'],
+    ['D0 revenue','Net-выручка в дату привлечения клиента.'],
+    ['CPA','Spend Меты (EN) / eligible new customers (Stripe).'],
+    ['Converted','Триал с последующим платежом 29.99. Rate — на «созревших» триалах (trial + 4 дня ≤ 22 сент).'],
+    ['Ретеншен M1–M12','Заданная кривка удержания: M1 40%, M2 25%, M3 15%, M4 10%, M5 8%, M6 3%, M7–M12 0% (% от исходной трайл-когорты). Выручка = клиенты × €27.77.'],
+    ['Мета','Geo = EN. Источник — лист Daily Campaign. Clicks/Impressions в выгрузке нет; спенд 22 сент задан вручную (€1736).']
+  ];
+  document.getElementById('method').innerHTML=m.map(function(r){return '<div class="mrow"><h4>'+r[0]+'</h4><p>'+r[1]+'</p></div>';}).join('');
+})();
+
+document.getElementById('foot').innerHTML=
+  'PixelVoid Minecraft W2A · Cohort Revenue Dashboard · '+S.period+
+  '<br>Источники: unified_customers (398), unified_payments (1151), Minecraft Meta CPA.'+
+  '<br>Валюта: EUR @ '+S.fx+' · факты — жирным, прогноз — курсивом-янтарём, недоступное — приглушённым.';
+</script>
+</body>
+</html>
